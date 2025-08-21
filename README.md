@@ -1,6 +1,6 @@
 # RushGoGoGo
 
-一个基于Golang的HTTP敏感信息被动代理工具(小玩具)，可做为中间件与其它扫描器对接，用来记录扫描过程中的敏感信息。
+一个基于Golang的HTTP敏感信息被动代理工具(小玩具)，可做为中间件与其它扫描器(例如katana)对接，用来记录扫描过程中的敏感信息。
 
 ## 功能特性
 
@@ -9,7 +9,8 @@
 - 自动HTTPS证书管理
 - 可配置的过滤规则
 - 多线程消息处理
-
+## 截图
+![测试图片](https://github.com/lgxuan/picx-images-hosting/raw/master/44b3ede7-a06c-4a17-a60b-72ce55f916eb.5fkx37f3as.webp) 
 ## 快速开始
 
 ### 安装

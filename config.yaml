@@ -1,5 +1,5 @@
 server:
-    threadCount: 15
+    threadCount: 10
 filters:
     - filterName: 大陆手机号
       filterType: reg

@@ -106,12 +106,26 @@ func NewInformationFilter(filterName string, filterType string, filterReg *regex
 }
 
 // FilterResponse 异步过滤响应
-func FilterResponse(w http.Response, filters []InformationFilter) *http.Response {
+func FilterResponse(w *http.Response, filters []InformationFilter) *http.Response {
+	// 安全检查：确保filters不为空
+	if len(filters) == 0 {
+		return w
+	}
+
+	// 安全检查：确保响应体不为空
+	if w.Body == nil {
+		return w
+	}
+
+	// 安全检查：确保响应对象有效
+	if w.Header == nil {
+		return w
+	}
 
 	// 先读取响应体
 	data, err := io.ReadAll(w.Body)
 	if err != nil {
-		return &w
+		return w
 	}
 	key := sha256.Sum256(data)
 	keyHex := hex.EncodeToString(key[:])
@@ -120,7 +134,7 @@ func FilterResponse(w http.Response, filters []InformationFilter) *http.Response
 	seenMutex.RLock()
 	if _, ok := seen[keyHex]; ok {
 		seenMutex.RUnlock()
-		return &w
+		return w
 	}
 	seenMutex.RUnlock()
 
@@ -128,7 +142,7 @@ func FilterResponse(w http.Response, filters []InformationFilter) *http.Response
 	seenMutex.Lock()
 	if _, ok := seen[keyHex]; ok {
 		seenMutex.Unlock()
-		return &w
+		return w
 	}
 	seen[keyHex] = struct{}{}
 	seenMutex.Unlock()
@@ -140,15 +154,35 @@ func FilterResponse(w http.Response, filters []InformationFilter) *http.Response
 	case workerPool <- struct{}{}: // 获取一个工作槽位
 		// 异步处理，不影响响应速度
 		go func() {
-			defer func() { <-workerPool }() // 处理完成后释放工作槽位
-
-			// 检查是否为无用路径
-			for _, i := range unusefulPath {
-				if strings.HasSuffix(w.Request.URL.Path, i) {
-					// 结束异步处理
-					return
+			defer func() {
+				// 添加panic恢复机制
+				if r := recover(); r != nil {
+					fmt.Printf("Recovered from panic in filter goroutine: %v\n", r)
 				}
+				<-workerPool
+			}() // 处理完成后释放工作槽位
+
+			// 安全获取请求URL信息
+			var requestURL string
+			if w.Request != nil && w.Request.URL != nil {
+				requestURL = w.Request.URL.String()
+
+				// 检查是否为无用路径
+				for _, i := range unusefulPath {
+					if strings.HasSuffix(w.Request.URL.Path, i) {
+						// 结束异步处理
+						return
+					}
+				}
+			} else {
+				requestURL = "unknown"
 			}
+
+			// 安全检查：确保data不为空
+			if len(data) == 0 {
+				return
+			}
+
 			// 转换为UTF-8字符串
 			html, err := utils.ConvertToUTF8(data)
 			if err != nil {
@@ -161,12 +195,12 @@ func FilterResponse(w http.Response, filters []InformationFilter) *http.Response
 				if !filter.enabled {
 					continue
 				}
-				filter.Filter(html, w.Request.URL.String())
+				filter.Filter(html, requestURL)
 			}
 		}()
 	default:
 	}
-	return &w
+	return w
 }
 
 // FilterWithContext 使用handlercontext进行过滤

@@ -16,23 +16,37 @@ import (
 func loadData() {
 	config, err := utils.GetConfigurationFromYaml("config.yaml")
 	if err != nil {
-		fmt.Println("读取配置文件失败", err)
+		fmt.Println("config file read error: ", err)
+		// 如果配置文件读取失败，使用默认过滤器
+		fmt.Println("using default filters")
+		return
 	}
-	if config.Filters != nil {
+
+	if config.Filters != nil && len(config.Filters) > 0 {
 		filters = []filter.InformationFilter{}
 		for _, fil := range config.Filters {
+			// 安全地编译正则表达式
+			regex, err := regexp.Compile(fil.FilterRegex)
+			if err != nil {
+				fmt.Printf("invalid regex for filter %s: %v\n", fil.FilterName, err)
+				continue
+			}
+
 			filters = append(filters, filter.NewInformationFilter(
 				fil.FilterName,
 				fil.FilterType,
-				regexp.MustCompile(fil.FilterRegex),
+				regex,
 				fil.FilterResource,
 				fil.FilterLevel,
 				fil.FilterEnabled,
 			))
 		}
-		fmt.Printf("filters: %v\n", filters)
+		fmt.Printf("loaded %d filters from config\n", len(filters))
+	} else {
+		fmt.Println("no filters found in config, using default filters")
 	}
 
+	// 安全地更新证书
 	cert := config.Cert.Cert
 	certKey := config.Cert.Key
 	if cert != "" || certKey != "" {
@@ -121,8 +135,12 @@ func ListenAddress(address string) {
 
 	proxy.OnRequest().HandleConnect(customAlwaysMitm)
 	proxy.OnResponse().DoFunc(func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		// 安全检查：确保响应不为空
+		if r == nil {
+			return nil
+		}
 
-		newResponse := filter.FilterResponse(*r, filters)
+		newResponse := filter.FilterResponse(r, filters)
 		return newResponse
 	})
 	http.ListenAndServe(address, proxy)
