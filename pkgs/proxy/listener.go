@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"rushgogogo/pkgs/filter"
@@ -123,10 +122,7 @@ func ListenAddress(address string) {
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = false
 
-	cert, err := parseCA(_caCert, _caKey)
-	if err != nil {
-		log.Fatal(err)
-	}
+	cert, _ := parseCA(_caCert, _caKey)
 
 	customCaMitm := &goproxy.ConnectAction{Action: goproxy.ConnectMitm, TLSConfig: goproxy.TLSConfigFromCA(cert)}
 	var customAlwaysMitm goproxy.FuncHttpsHandler = func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {

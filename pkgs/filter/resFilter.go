@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"net/http"
+	"net/http/httputil"
 	"regexp"
 	handlercontext "rushgogogo/internal/handlerContext"
 	"rushgogogo/pkgs/utils"
@@ -107,26 +107,20 @@ func NewInformationFilter(filterName string, filterType string, filterReg *regex
 
 // FilterResponse 异步过滤响应
 func FilterResponse(w *http.Response, filters []InformationFilter) *http.Response {
-	// 安全检查：确保filters不为空
-	if len(filters) == 0 {
-		return w
-	}
 
-	// 安全检查：确保响应体不为空
-	if w.Body == nil {
-		return w
-	}
+	data, err := httputil.DumpResponse(w, true)
 
-	// 安全检查：确保响应对象有效
-	if w.Header == nil {
-		return w
-	}
-
-	// 先读取响应体
-	data, err := io.ReadAll(w.Body)
 	if err != nil {
 		return w
 	}
+
+	parts := bytes.SplitN(data, []byte("\r\n\r\n"), 2)
+	if len(parts) == 2 {
+		data = parts[1]
+	} else {
+		data = nil
+	}
+
 	key := sha256.Sum256(data)
 	keyHex := hex.EncodeToString(key[:])
 
@@ -146,9 +140,6 @@ func FilterResponse(w *http.Response, filters []InformationFilter) *http.Respons
 	}
 	seen[keyHex] = struct{}{}
 	seenMutex.Unlock()
-	// 创建新的响应体
-	w.Body = io.NopCloser(bytes.NewBuffer(data))
-
 	// 使用goroutine池限制并发数量
 	select {
 	case workerPool <- struct{}{}: // 获取一个工作槽位
