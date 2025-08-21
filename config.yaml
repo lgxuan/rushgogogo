@@ -1,0 +1,243 @@
+server:
+    threadCount: 15
+filters:
+    - filterName: 大陆手机号
+      filterType: reg
+      filterRegex: \b1[3456789]\d{9}\b
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: 身份证
+      filterType: reg
+      filterRegex: \b\d{17}[\dXx]\b
+      filterResource: body
+      filterLevel: high
+      filterEnabled: false
+    - filterName: 邮箱
+      filterType: reg
+      filterRegex: \b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+      filterResource: body
+      filterLevel: medium
+      filterEnabled: true
+    - filterName: 银行卡
+      filterType: reg
+      filterRegex: \b\d{16,19}\b
+      filterResource: body
+      filterLevel: high
+      filterEnabled: false
+    - filterName: 域名
+      filterType: reg
+      filterRegex: (?i)\b(?:[a-zA-Z0-9-]+\.)+(?:com|net|org|io|co|edu|gov|mil|biz|info|me|us|ca|uk|de|fr|it|es|au|nz|jp|kr|cn|ru|br|in|mx|nl)\b
+      filterResource: body
+      filterLevel: low
+      filterEnabled: false
+    - filterName: 路径
+      filterType: reg
+      filterRegex: (?:https?://|/|\.\./|\./|/[\w-]+)/(?:[\w/.?%&=-]*|[\w-]+)
+      filterResource: body
+      filterLevel: low
+      filterEnabled: false
+    - filterName: URL
+      filterType: reg
+      filterRegex: (?i)\b((?:https?|ftp|file):\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,63}\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/=]*))\b
+      filterResource: body
+      filterLevel: low
+      filterEnabled: false
+    - filterName: JWT
+      filterType: reg
+      filterRegex: \bey[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\b
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: JDBC
+      filterType: reg
+      filterRegex: jdbc:[a-zA-Z]+:\/\/[^\s]*
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: 认证头
+      filterType: reg
+      filterRegex: (?i)\bAuthorization:\s*(?:Bearer|Basic|Digest)\s+(?:[A-Za-z0-9-._~+/]+=*|[\w%]{2}==)\b
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: 账户密码
+      filterType: reg
+      filterRegex: (?:username|user|account)\s*[:=]\s*[\'\"](.*?)[\'\"]\s*,\s*(?:password|pass)\s*[:=]\s*[\'\"](.*?)[\'\"]
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: ticket
+      filterType: reg
+      filterRegex: \bjsapi_ticket\b
+      filterResource: body
+      filterLevel: medium
+      filterEnabled: true
+    - filterName: 加密算法
+      filterType: reg
+      filterRegex: (?i)\b(AES|DES|3DES|RC4|RSA|ECC|SM2|SM3|SM4|Blowfish|HMAC)\b
+      filterResource: body
+      filterLevel: low
+      filterEnabled: true
+    - filterName: 密钥
+      filterType: reg
+      filterRegex: (?i)(?:encryption|secret|private|api|auth|access|key)\s*[:=]\s*["\']?([0-9a-fA-F]{32,})["\']?
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: 偏移量
+      filterType: reg
+      filterRegex: (?i)(?:iv|offset|init_vector)\s*[:=]\s*["\']?([0-9a-fA-F]{8,})["\']?
+      filterResource: body
+      filterLevel: medium
+      filterEnabled: true
+    - filterName: swagger
+      filterType: reg
+      filterRegex: (?i)\b((?:https?://)?(?:[a-zA-Z0-9-\.]+)\/(?:v1|v2|v3|docs|swagger|apidocs|api-docs|open-api)?\/?(swagger|api-docs)(?:\.json)?)\b
+      filterResource: body
+      filterLevel: medium
+      filterEnabled: true
+    - filterName: oss
+      filterType: reg
+      filterRegex: https?://[^\'")\s]*oss[^\'")\s]+
+      filterResource: body
+      filterLevel: medium
+      filterEnabled: true
+    - filterName: access_key
+      filterType: reg
+      filterRegex: (?i)\baccess[_]?key\s*[:=]\s*["\']([^"\']+)["\']
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: oss_key
+      filterType: reg
+      filterRegex: (?i)\boss\s*[_\s]*(?:key)?\s*[=:]\s*[\'"]([A-Z0-9]+)[\'"]
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: apikey
+      filterType: reg
+      filterRegex: (?i)\bapi[_]?key\s*[=:]\s*["\']([^"\']+)["\']
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: apisecret
+      filterType: reg
+      filterRegex: (?i)\bapi[_]?secret\s*[=:]\s*["\']([^"\']+)["\']
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: app_key
+      filterType: reg
+      filterRegex: (?i)\bAppKey\s*:\s*["\']([^"\']+)["\']
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: app_secret
+      filterType: reg
+      filterRegex: (?i)\bAPPSECRET\s*:\s*["\']([^"\']+)["\']
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: RSA公钥
+      filterType: reg
+      filterRegex: '-----BEGIN(?:\s+\w+)?\s+PUBLIC\s+KEY-----\s*(.*?)\s*-----END(?:\s+\w+)?\s+PUBLIC\s+KEY-----'
+      filterResource: body
+      filterLevel: medium
+      filterEnabled: true
+    - filterName: RSA私钥
+      filterType: reg
+      filterRegex: '-----BEGIN(?:\s+RSA)?\s+PRIVATE\s+KEY-----\s*(.*?)\s*-----END(?:\s+RSA)?\s+PRIVATE\s+KEY-----'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: ai token
+      filterType: reg
+      filterRegex: sk-[A-Za-z0-9_-]{37,57}
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: 内网Ip
+      filterType: reg
+      filterRegex: \b(10\.0\.0\.0/8|172\.16\.0\.0/12|192\.168\.0\.0/16)\b
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-LTAI
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]LTAI[0-9A-Za-z]{12,20}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-AWS
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#](A3T[A-Z0-9]|ABIA|ACCA|AGPA|AIDA|AIPA|AKIA|ANPA|ANVA|APKA|AROA|ASCA|ASIA)[0-9A-Z]{16}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-GCP
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]GOOG[0-9A-Za-z]{10,30}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-Azure
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]AZ[A-Za-z0-9]{34,40}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-IBM
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]IBM[A-Za-z0-9]{10,40}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-Oracle
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]OCID[A-Za-z0-9]{10,40}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-Tencent
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]AKID[A-Za-z0-9]{13,20}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-JD
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]JDC_[A-Z0-9]{28,32}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-通用AK
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]AK[A-Za-z0-9]{10,40}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-火山
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]AKLT[A-Za-z0-9_-]{16,28}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-LTC
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]LTC[A-Za-z0-9]{10,60}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: AKSK-YYT
+      filterType: reg
+      filterRegex: '[\s\n''"`=:#]YYT[A-Za-z0-9]{10,60}[\s\n''"`=:#]'
+      filterResource: body
+      filterLevel: high
+      filterEnabled: true
+    - filterName: URL-精准
+      filterType: reg
+      filterRegex: (?i)\b(?:ftp|https?)://[%.\w\-]+(?:[\w\-.,@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?\b
+      filterResource: body
+      filterLevel: low
+      filterEnabled: false
